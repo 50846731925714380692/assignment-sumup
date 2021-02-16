@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -9,11 +10,26 @@ public class Assignment
     static int count = 0;
     static Set<String> duplicates = new HashSet<>();
 
+    public static void main(String[] args)
+    {
+        int[][] board = {
+                {0, 0, 0},
+                {0, 0, 0},
+                {0, 0, 0}
+        };
+
+        move(board, true, 0);
+        move(board, false, 0);
+
+        System.out.println("Total Combinations: " + count * 2);
+    }
+
     public static void move(int[][] board, boolean p1Turn, int depth)
     {
-        if (isFinal(board))
+        //also count the full board without a winner
+        if (isWon(board) || depth == 9)
         {
-            //remove duplicates from the solutions
+            //remove duplicates from the solutions, if this is commented out - duplicated end states will be observed.
             if (duplicates.add(stringifyFinal(board)))
             {
                 count++;
@@ -41,52 +57,30 @@ public class Assignment
         }
     }
 
-    public static void main(String[] args)
-    {
-        int[][] board = {
-                {0, 0, 0},
-                {0, 0, 0},
-                {0, 0, 0}
-        };
-
-        move(board, true, 1);
-
-        System.out.println("Total P1 First Combinations: " + count);
-    }
-
     private static String stringifyFinal(int[][] board)
     {
-        StringBuilder sb = new StringBuilder(21);
-
-        for (int[] ints : board)
-        {
-            for (int anInt : ints)
-            {
-                sb.append(' ').append(anInt == P1 ? 'x' : anInt == P2 ? 'o' : '-');
-            }
-
-            sb.append('\n');
-        }
-
-        return sb.toString();
+        return Arrays.stream(board)
+                .flatMapToInt(Arrays::stream)
+                .collect(StringBuilder::new, StringBuilder::append, StringBuilder::append)
+                .toString();
     }
 
-    static boolean isFinal(int[][] board)
+    static boolean isWon(int[][] board)
     {
-        boolean isFinal = false;
+        boolean isWon = false;
 
         //each line and column
         for (int i = 0; i < 3; i++)
         {
-            isFinal |= wins(board[i][0], board[i][1], board[i][2]);
-            isFinal |= wins(board[0][i], board[1][i], board[2][i]);
+            isWon |= wins(board[i][0], board[i][1], board[i][2]);
+            isWon |= wins(board[0][i], board[1][i], board[2][i]);
         }
 
         //diagonals
-        isFinal |= wins(board[0][0], board[1][1], board[2][2]);
-        isFinal |= wins(board[0][2], board[1][1], board[2][0]);
+        isWon |= wins(board[0][0], board[1][1], board[2][2]);
+        isWon |= wins(board[0][2], board[1][1], board[2][0]);
 
-        return isFinal;
+        return isWon;
     }
 
     static boolean wins(int a, int b, int c)
